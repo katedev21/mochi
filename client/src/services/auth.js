@@ -97,7 +97,6 @@ export const login = async (email, password) => {
  */
 export const logout = () => {
   clearAuthData();
-  window.location.href = '/login';
 };
 
 /**
@@ -139,37 +138,6 @@ export const changePassword = async (currentPassword, newPassword) => {
     return { success: true };
   } catch (error) {
     console.error('Password change error:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-/**
- * Request password reset
- * @param {string} email - User email
- * @returns {Promise<Object>} Password reset request result
- */
-export const requestPasswordReset = async (email) => {
-  try {
-    await api.post('/auth/forgot-password', { email });
-    return { success: true };
-  } catch (error) {
-    console.error('Password reset request error:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-/**
- * Reset password with token
- * @param {string} token - Reset token
- * @param {string} newPassword - New password
- * @returns {Promise<Object>} Password reset result
- */
-export const resetPassword = async (token, newPassword) => {
-  try {
-    await api.post('/auth/reset-password', { token, newPassword });
-    return { success: true };
-  } catch (error) {
-    console.error('Password reset error:', error);
     return { success: false, error: error.message };
   }
 };

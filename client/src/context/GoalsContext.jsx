@@ -1,6 +1,11 @@
 // src/context/GoalsContext.jsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { fetchGoals, createGoal, updateGoal, deleteGoal } from '../api/goals';
+import { 
+  fetchGoals, 
+  createGoal, 
+  updateGoal, 
+  deleteGoal 
+} from '../api'; // Updated import path
 
 // Initial state
 const initialState = {

@@ -1,4 +1,4 @@
-// src/pages/Dashboard.jsx
+// src/pages/Dashboard.jsx - Update imports
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -33,7 +33,7 @@ import useVoiceRecognition from '../hooks/useVoiceRecognition';
 
 // Services
 import { processVoiceCommand, generateResponse } from '../services/voiceCommandProcessor';
-import { getAISuggestions } from '../api/voice';
+import { getAISuggestions } from '../api'; // Updated import
 
 const Dashboard = () => {
   // Get data from context

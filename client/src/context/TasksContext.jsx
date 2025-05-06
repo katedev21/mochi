@@ -1,6 +1,12 @@
+
 // src/context/TasksContext.jsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { fetchTasks, createTask, updateTask, deleteTask } from '../api/tasks';
+import { 
+  fetchTasks, 
+  createTask, 
+  updateTask, 
+  deleteTask 
+} from '../api'; // Updated import path
 import { useGoals } from './GoalsContext';
 
 // Initial state
