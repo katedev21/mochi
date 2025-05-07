@@ -43,6 +43,7 @@ export const getCurrentUser = () => {
     return JSON.parse(userJson);
   } catch (error) {
     console.error('Error parsing user data:', error);
+    clearAuthData(); // Clear invalid data
     return null;
   }
 };
@@ -52,7 +53,7 @@ export const getCurrentUser = () => {
  * @returns {boolean} True if the user is authenticated
  */
 export const isAuthenticated = () => {
-  return !!getToken();
+  return !!getToken() && !!getCurrentUser();
 };
 
 /**
@@ -63,13 +64,19 @@ export const isAuthenticated = () => {
 export const register = async (userData) => {
   try {
     const response = await api.post('/auth/register', userData);
-    const { token, user } = response;
     
-    saveAuthData(token, user);
-    return { success: true, user };
+    if (response && response.token && response.user) {
+      saveAuthData(response.token, response.user);
+      return { success: true, user: response.user };
+    } else {
+      throw new Error('Invalid response from server');
+    }
   } catch (error) {
     console.error('Registration error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message || 'Registration failed. Please try again.' 
+    };
   }
 };
 
@@ -82,13 +89,19 @@ export const register = async (userData) => {
 export const login = async (email, password) => {
   try {
     const response = await api.post('/auth/login', { email, password });
-    const { token, user } = response;
     
-    saveAuthData(token, user);
-    return { success: true, user };
+    if (response && response.token && response.user) {
+      saveAuthData(response.token, response.user);
+      return { success: true, user: response.user };
+    } else {
+      throw new Error('Invalid response from server');
+    }
   } catch (error) {
     console.error('Login error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message || 'Login failed. Please check your credentials and try again.' 
+    };
   }
 };
 
@@ -107,18 +120,24 @@ export const logout = () => {
 export const updateProfile = async (userData) => {
   try {
     const response = await api.put('/auth/profile', userData);
-    const { user } = response;
     
-    // Update stored user data
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      saveAuthData(getToken(), { ...currentUser, ...user });
+    if (response && response.user) {
+      // Update stored user data
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        saveAuthData(getToken(), { ...currentUser, ...response.user });
+      }
+      
+      return { success: true, user: response.user };
+    } else {
+      throw new Error('Invalid response from server');
     }
-    
-    return { success: true, user };
   } catch (error) {
     console.error('Profile update error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message || 'Profile update failed. Please try again.' 
+    };
   }
 };
 
@@ -138,6 +157,9 @@ export const changePassword = async (currentPassword, newPassword) => {
     return { success: true };
   } catch (error) {
     console.error('Password change error:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error.message || 'Password change failed. Please check your current password and try again.' 
+    };
   }
 };

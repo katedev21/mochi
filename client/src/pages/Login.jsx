@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Zap, LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,15 +11,20 @@ const Login = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login, isAuthenticated, error } = useAuth();
+  const { login, isAuthenticated, error, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // If already authenticated, redirect to dashboard
+  // Get the redirect path from location state or default to homepage
+  const from = location.state?.from?.pathname || '/';
+  
+  // If already authenticated and not still loading, redirect to intended page
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    // Only redirect if authentication is confirmed and not in loading state
+    if (isAuthenticated && !loading) {
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate, from]);
   
   // Form validation
   const validateForm = () => {
@@ -52,7 +57,7 @@ const Login = () => {
         const result = await login(email, password);
         
         if (result.success) {
-          navigate('/');
+          // Successful login will trigger the useEffect above to handle navigation
         }
       } catch (err) {
         console.error('Login error:', err);
@@ -61,6 +66,18 @@ const Login = () => {
       }
     }
   };
+  
+  // Show loading state while authentication is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

@@ -22,14 +22,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        setLoading(true);
+        const token = getToken();
         const currentUser = getCurrentUser();
-        if (currentUser && getToken()) {
+        
+        if (currentUser && token) {
           setUser(currentUser);
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
         setError(err.message);
       } finally {
+        // Always set loading to false when initialization completes
         setLoading(false);
       }
     };

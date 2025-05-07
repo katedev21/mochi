@@ -6,7 +6,7 @@ import { getToken } from '../services/auth';
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
     ? 'https://api.productivityassistant.com/v1' 
-    : 'http://localhost:3000/api',
+    : 'http://localhost:3001/api',
   headers: {
     'Content-Type': 'application/json',
   },
