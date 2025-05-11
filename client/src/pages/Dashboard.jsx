@@ -1,4 +1,4 @@
-// src/pages/Dashboard.jsx - Update imports
+// src/pages/Dashboard.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -22,6 +22,7 @@ import toast from 'react-hot-toast';
 // Components
 import TaskList from '../components/tasks/TaskList';
 import ShortTermGoalList from '../components/goals/ShortTermGoalList';
+import LongTermGoalList from '../components/goals/LongTermGoalList'; // Import the new component
 import ChatInterface from '../components/voice/ChatInterface';
 import VoiceInput from '../components/voice/VoiceInput';
 
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const [inputText, setInputText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showLongTermGoals, setShowLongTermGoals] = useState(true); // State to toggle long-term goals visibility
   
   // Refs
   const chatContainerRef = useRef(null);
@@ -123,7 +125,12 @@ const Dashboard = () => {
     
     try {
       switch (intent) {
-        // Implementation for each intent...
+        case 'SHOW_GOALS':
+          if (entities.goalType === 'long-term') {
+            setShowLongTermGoals(true);
+          }
+          break;
+        // Implementation for other intents...
         // This would call the appropriate functions from context providers
         // For brevity, this is just a skeleton
       }
@@ -286,6 +293,40 @@ const Dashboard = () => {
               </div>
               
               <TaskList tasks={dailyTasks} />
+            </section>
+            
+            {/* Long Term Goals Section - NEW */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold flex items-center">
+                  <Target className="mr-2 text-blue-500" /> 
+                  Long-Term Goals
+                </h2>
+                
+                <div className="flex items-center space-x-3">
+                  <button 
+                    onClick={() => setShowLongTermGoals(!showLongTermGoals)}
+                    className="text-gray-600 hover:text-gray-800 text-sm flex items-center"
+                  >
+                    {showLongTermGoals ? 'Hide' : 'Show'}
+                  </button>
+                  
+                  <Link 
+                    to="/goals"
+                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                  >
+                    <PlusCircle className="mr-1 h-4 w-4" />
+                    Add Goal
+                  </Link>
+                </div>
+              </div>
+              
+              {showLongTermGoals && (
+                <LongTermGoalList 
+                  goals={longTermGoals} 
+                  showMilestones={false} // Keep it compact on dashboard
+                />
+              )}
             </section>
             
             {/* Short Term Goals */}
