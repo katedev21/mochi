@@ -26,10 +26,14 @@ const GoalForm = ({
   onCancel = () => {},
   initialData = null
 }) => {
+  // Get long-term goals for the dropdown
+  const { longTermGoals } = useGoals();
+  
   const [formData, setFormData] = useState(initialData || {
     title: '',
     description: '',
     targetDate: '',
+    endDate: '',  // Added for short-term goals
     milestones: goalType === 'long-term' ? [{ title: '', targetDate: '', completed: false }] : [],
     parentGoalId: '',
     timeframe: goalType === 'short-term' ? 'weekly' : undefined
@@ -83,7 +87,20 @@ const GoalForm = ({
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Make a copy of the form data
+    let submissionData = { ...formData };
+    
+    // If it's a short-term goal, ensure we're using the correct field names
+    if (goalType === 'short-term') {
+      // If endDate is empty but targetDate has a value, use targetDate value for endDate
+      // This handles cases where the user might have entered a date in the wrong field
+      if (!submissionData.endDate && submissionData.targetDate) {
+        submissionData.endDate = submissionData.targetDate;
+      }
+    }
+    
+    onSubmit(submissionData);
   };
   
   return (
@@ -120,14 +137,14 @@ const GoalForm = ({
       </div>
       
       <div>
-        <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700">
-          Target Date *
+        <label htmlFor={goalType === 'short-term' ? 'endDate' : 'targetDate'} className="block text-sm font-medium text-gray-700">
+          {goalType === 'short-term' ? 'End Date *' : 'Target Date *'}
         </label>
         <input
           type="date"
-          id="targetDate"
-          name="targetDate"
-          value={formData.targetDate}
+          id={goalType === 'short-term' ? 'endDate' : 'targetDate'}
+          name={goalType === 'short-term' ? 'endDate' : 'targetDate'}
+          value={goalType === 'short-term' ? formData.endDate : formData.targetDate}
           onChange={handleChange}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           required
@@ -169,7 +186,11 @@ const GoalForm = ({
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="">None (Independent Goal)</option>
-            {/* This would be populated with actual long-term goals */}
+            {longTermGoals.map(goal => (
+              <option key={goal.id} value={goal.id}>
+                {goal.title}
+              </option>
+            ))}
           </select>
         </div>
       )}
@@ -378,12 +399,28 @@ const Goals = () => {
       if (formType === 'long-term') {
         await addLongTermGoal(goalData);
       } else {
-        await addShortTermGoal(goalData);
+        // Make sure we have all required fields for short-term goals
+        if (!goalData.title || !goalData.timeframe || !goalData.endDate) {
+          alert('Please fill in all required fields (Title, Timeframe, and End Date)');
+          return;
+        }
+        
+        // Create a properly formatted object for the API
+        const shortTermGoalData = {
+          title: goalData.title,
+          description: goalData.description || '',
+          timeframe: goalData.timeframe,
+          endDate: goalData.endDate,
+          parentGoalId: goalData.parentGoalId || null
+        };
+        
+        await addShortTermGoal(shortTermGoalData);
       }
       
       setShowForm(false);
     } catch (error) {
       console.error('Error creating goal:', error);
+      alert(`Failed to create goal: ${error.message || 'Unknown error'}`);
     }
   };
   
